@@ -1,4 +1,7 @@
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { SidebarProvider } from "@/components/dashboard/SidebarContext";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { MobileSidebar } from "@/components/dashboard/MobileSidebar";
 
 export default function DashboardLayout({
   children,
@@ -6,9 +9,14 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex h-screen flex-col bg-background text-foreground">
-      <TopBar />
-      <div className="flex flex-1 overflow-hidden">{children}</div>
-    </div>
+    <TooltipProvider>
+      <SidebarProvider>
+        <div className="flex h-screen flex-col bg-background text-foreground">
+          <TopBar />
+          <MobileSidebar />
+          <div className="flex flex-1 overflow-hidden">{children}</div>
+        </div>
+      </SidebarProvider>
+    </TooltipProvider>
   );
 }

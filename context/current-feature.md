@@ -2,19 +2,33 @@
 
 <!-- Feature Name -->
 
+Dashboard UI — Phase 2
+
 ## Status
 
 <!-- Not Started|In Progress|Completed -->
 
-Not Started
+In Progress
 
 ## Goals
 
 <!-- Goals & requirements -->
 
+- Collapsible sidebar
+- Items/types with links to /items/TYPE (e.g. /items/snippets)
+- Favorite collections
+- Most recent collections
+- User avatar area at the bottom
+- Drawer icon to open/close sidebar
+- Always a drawer on mobile view
+
 ## Notes
 
 <!-- Any extra notes -->
+
+- Spec: @context/features/dashboard-phase-2-spec.md
+- Screenshot: @context/screenshots/dashboard-ui-main.png
+- Mock data: @src/lib/mock-data.ts
 
 ## History
 
