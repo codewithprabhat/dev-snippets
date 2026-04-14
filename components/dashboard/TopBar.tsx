@@ -1,16 +1,34 @@
+"use client";
+
 import { PanelLeft, Plus, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useSidebar } from "@/components/dashboard/SidebarContext";
 
 export function TopBar() {
+  const { toggle, setMobileOpen } = useSidebar();
+
   return (
     <header className="flex h-14 items-center gap-3 border-b border-border bg-background px-4">
+      {/* Desktop toggle */}
       <Button
         variant="ghost"
         size="icon"
         aria-label="Toggle sidebar"
-        className="shrink-0"
+        className="hidden shrink-0 md:inline-flex"
+        onClick={toggle}
+      >
+        <PanelLeft />
+      </Button>
+
+      {/* Mobile toggle */}
+      <Button
+        variant="ghost"
+        size="icon"
+        aria-label="Open sidebar"
+        className="shrink-0 md:hidden"
+        onClick={() => setMobileOpen(true)}
       >
         <PanelLeft />
       </Button>
