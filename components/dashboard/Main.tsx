@@ -15,7 +15,8 @@ import {
   FolderHeart,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { items, collections, itemTypes } from "@/lib/mock-data";
+import { items, itemTypes } from "@/lib/mock-data";
+import { getCollections } from "@/lib/db/collections";
 
 const iconMap: Record<
   string,
@@ -42,63 +43,6 @@ function getItemType(typeId: string) {
   return itemTypes.find((t) => t.id === typeId);
 }
 
-function getCollectionTypeIcons(collectionId: string) {
-  const collectionItems = items.filter((i) => i.collectionId === collectionId);
-  const uniqueTypeIds = [...new Set(collectionItems.map((i) => i.typeId))];
-  return uniqueTypeIds.map((typeId) => {
-    const type = itemTypes.find((t) => t.id === typeId);
-    if (!type) return null;
-    const Icon = iconMap[type.icon] ?? Code;
-    return (
-      <Icon key={typeId} className="size-3.5" style={{ color: type.color }} />
-    );
-  });
-}
-
-function getCollectionDominantColor(collectionId: string): string {
-  const collectionItems = items.filter((i) => i.collectionId === collectionId);
-  if (collectionItems.length === 0) return "#555";
-
-  const typeCounts: Record<string, number> = {};
-  for (const item of collectionItems) {
-    typeCounts[item.typeId] = (typeCounts[item.typeId] || 0) + 1;
-  }
-
-  const dominantTypeId = Object.entries(typeCounts).sort(
-    (a, b) => b[1] - a[1]
-  )[0][0];
-  const type = itemTypes.find((t) => t.id === dominantTypeId);
-  return type?.color ?? "#555";
-}
-
-// Derived data
-const stats = [
-  {
-    label: "Items",
-    value: items.length,
-    icon: Archive,
-    color: "text-blue-500",
-  },
-  {
-    label: "Collections",
-    value: collections.length,
-    icon: Folder,
-    color: "text-emerald-500",
-  },
-  {
-    label: "Favorite Items",
-    value: items.filter((i) => i.isFavorite).length,
-    icon: Heart,
-    color: "text-rose-500",
-  },
-  {
-    label: "Favorite Collections",
-    value: collections.filter((c) => c.isFavorite).length,
-    icon: FolderHeart,
-    color: "text-amber-500",
-  },
-];
-
 const pinnedItems = items.filter((i) => i.isPinned);
 const recentItems = [...items]
   .sort(
@@ -106,7 +50,36 @@ const recentItems = [...items]
   )
   .slice(0, 10);
 
-export function Main() {
+export async function Main() {
+  const collections = await getCollections();
+
+  const stats = [
+    {
+      label: "Items",
+      value: items.length,
+      icon: Archive,
+      color: "text-blue-500",
+    },
+    {
+      label: "Collections",
+      value: collections.length,
+      icon: Folder,
+      color: "text-emerald-500",
+    },
+    {
+      label: "Favorite Items",
+      value: items.filter((i) => i.isFavorite).length,
+      icon: Heart,
+      color: "text-rose-500",
+    },
+    {
+      label: "Favorite Collections",
+      value: collections.filter((c) => c.isFavorite).length,
+      icon: FolderHeart,
+      color: "text-amber-500",
+    },
+  ];
+
   return (
     <main className="flex-1 overflow-y-auto p-6">
       {/* Header */}
@@ -145,38 +118,44 @@ export function Main() {
           </Link>
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {collections.map((col) => {
-            const dominantColor = getCollectionDominantColor(col.id);
-            return (
-              <Link
-                key={col.id}
-                href={`/collections/${col.id}`}
-                className="group rounded-xl border border-border border-l-[3px] bg-card p-4 transition-colors hover:bg-accent/50"
-                style={{
-                  borderLeftColor: dominantColor,
-                  boxShadow: `-4px 0 12px -4px ${dominantColor}50`,
-                }}
-              >
-                <div className="mb-1 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium">{col.name}</h3>
-                    {col.isFavorite && (
-                      <Star className="size-3.5 fill-yellow-500 text-yellow-500" />
-                    )}
-                  </div>
-                </div>
-                <p className="mb-2 text-xs text-muted-foreground">
-                  {col.itemCount} Items
-                </p>
-                <p className="mb-3 text-sm text-muted-foreground line-clamp-1">
-                  {col.description}
-                </p>
+          {collections.map((col) => (
+            <Link
+              key={col.id}
+              href={`/collections/${col.id}`}
+              className="group rounded-xl border border-border border-l-[3px] bg-card p-4 transition-colors hover:bg-accent/50"
+              style={{
+                borderLeftColor: col.dominantColor,
+                boxShadow: `-4px 0 12px -4px ${col.dominantColor}50`,
+              }}
+            >
+              <div className="mb-1 flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  {getCollectionTypeIcons(col.id)}
+                  <h3 className="font-medium">{col.name}</h3>
+                  {col.isFavorite && (
+                    <Star className="size-3.5 fill-yellow-500 text-yellow-500" />
+                  )}
                 </div>
-              </Link>
-            );
-          })}
+              </div>
+              <p className="mb-2 text-xs text-muted-foreground">
+                {col.itemCount} Items
+              </p>
+              <p className="mb-3 text-sm text-muted-foreground line-clamp-1">
+                {col.description}
+              </p>
+              <div className="flex items-center gap-2">
+                {col.typeIcons.map(({ typeId, icon, color }) => {
+                  const Icon = iconMap[icon] ?? Code;
+                  return (
+                    <Icon
+                      key={typeId}
+                      className="size-3.5"
+                      style={{ color }}
+                    />
+                  );
+                })}
+              </div>
+            </Link>
+          ))}
         </div>
       </div>
 
@@ -190,9 +169,7 @@ export function Main() {
           <div className="flex flex-col gap-3">
             {pinnedItems.map((item) => {
               const type = getItemType(item.typeId);
-              const TypeIcon = type
-                ? (iconMap[type.icon] ?? Code)
-                : Code;
+              const TypeIcon = type ? (iconMap[type.icon] ?? Code) : Code;
               return (
                 <div
                   key={item.id}
@@ -243,9 +220,7 @@ export function Main() {
         <div className="flex flex-col gap-3">
           {recentItems.map((item) => {
             const type = getItemType(item.typeId);
-            const TypeIcon = type
-              ? (iconMap[type.icon] ?? Code)
-              : Code;
+            const TypeIcon = type ? (iconMap[type.icon] ?? Code) : Code;
             return (
               <div
                 key={item.id}
