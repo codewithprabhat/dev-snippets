@@ -15,8 +15,8 @@ import {
   FolderHeart,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { items, itemTypes } from "@/lib/mock-data";
 import { getCollections } from "@/lib/db/collections";
+import { getPinnedItems, getRecentItems, getItemStats } from "@/lib/db/items";
 
 const iconMap: Record<
   string,
@@ -32,31 +32,25 @@ const iconMap: Record<
   Folder,
 };
 
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
+function formatDate(date: Date) {
+  return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
   });
 }
 
-function getItemType(typeId: string) {
-  return itemTypes.find((t) => t.id === typeId);
-}
-
-const pinnedItems = items.filter((i) => i.isPinned);
-const recentItems = [...items]
-  .sort(
-    (a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()
-  )
-  .slice(0, 10);
-
 export async function Main() {
-  const collections = await getCollections();
+  const [collections, pinnedItems, recentItems, itemStats] = await Promise.all([
+    getCollections(),
+    getPinnedItems(),
+    getRecentItems(),
+    getItemStats(),
+  ]);
 
   const stats = [
     {
       label: "Items",
-      value: items.length,
+      value: itemStats.totalItems,
       icon: Archive,
       color: "text-blue-500",
     },
@@ -68,7 +62,7 @@ export async function Main() {
     },
     {
       label: "Favorite Items",
-      value: items.filter((i) => i.isFavorite).length,
+      value: itemStats.favoriteItems,
       icon: Heart,
       color: "text-rose-500",
     },
@@ -168,8 +162,7 @@ export async function Main() {
           </div>
           <div className="flex flex-col gap-3">
             {pinnedItems.map((item) => {
-              const type = getItemType(item.typeId);
-              const TypeIcon = type ? (iconMap[type.icon] ?? Code) : Code;
+              const TypeIcon = iconMap[item.type.icon ?? ""] ?? Code;
               return (
                 <div
                   key={item.id}
@@ -180,7 +173,7 @@ export async function Main() {
                       <div className="mb-1 flex items-center gap-2">
                         <TypeIcon
                           className="size-4 shrink-0"
-                          style={{ color: type?.color }}
+                          style={{ color: item.type.color ?? undefined }}
                         />
                         <h3 className="truncate font-medium">{item.title}</h3>
                         <Pin className="size-3 shrink-0 text-muted-foreground" />
@@ -219,8 +212,7 @@ export async function Main() {
         <h2 className="mb-4 text-lg font-semibold">Recent</h2>
         <div className="flex flex-col gap-3">
           {recentItems.map((item) => {
-            const type = getItemType(item.typeId);
-            const TypeIcon = type ? (iconMap[type.icon] ?? Code) : Code;
+            const TypeIcon = iconMap[item.type.icon ?? ""] ?? Code;
             return (
               <div
                 key={item.id}
@@ -231,7 +223,7 @@ export async function Main() {
                     <div className="mb-1 flex items-center gap-2">
                       <TypeIcon
                         className="size-4 shrink-0"
-                        style={{ color: type?.color }}
+                        style={{ color: item.type.color ?? undefined }}
                       />
                       <h3 className="truncate font-medium">{item.title}</h3>
                       {item.isPinned && (
@@ -247,7 +239,7 @@ export async function Main() {
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
                     <Badge variant="outline" className="text-[11px]">
-                      {type?.name ?? "Item"}
+                      {item.type.name}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
                       {formatDate(item.updatedAt)}
