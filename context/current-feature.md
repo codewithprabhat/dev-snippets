@@ -1,23 +1,18 @@
 # Current Feature
 
-Stats & Sidebar — Real Data
+None
 
 ## Status
 
-In Progress
+—
 
 ## Goals
 
-- Display stats from database data, keeping current design/layout
-- Display item types in sidebar with their icons, linking to /items/[typename]
-- Add "View all collections" link under the collections list that goes to /collections
-- Keep star icons for favorite collections; for recents, show colored circle based on most-used item type
-- Create `src/lib/db/items.ts` with database functions
+—
 
 ## Notes
 
-- Spec: @context/features/stats-sidebar-spec.md
-- Reference: @src/lib/db/collections.ts
+—
 
 ## History
 
@@ -31,3 +26,4 @@ In Progress
 - 2026-04-15 — **Database Seed Script ✅** — `scripts/seed.ts` with demo user, 7 system item types, 16 tags, 5 collections, 20 items, 36 item-tag associations; `scripts/test-db.ts` for connection testing; `db:seed`, `db:test`, `db:studio` npm scripts; bcryptjs for password hashing
 - 2026-04-15 — **Dashboard Collections — Real Data ✅** — `lib/db/collections.ts` with data fetching functions; collections fetched in server component; card border color derived from dominant item type; small type icons shown per collection; collection stats updated with real data
 - 2026-04-16 — **Dashboard Items — Real Data ✅** — `lib/db/items.ts` with `getPinnedItems`, `getRecentItems`, `getItemStats`; all four data calls run in parallel via `Promise.all`; pinned and recent items fetched in server component; item icon/color derived from item type; tags displayed on pinned items; type badge on recent items; pinned section hidden when empty; mock-data removed from Main.tsx
+- 2026-04-16 — **Stats & Sidebar — Real Data ✅** — `getItemTypes()` added to `lib/db/items.ts`; sidebar fetches real item types (with counts) and collections from DB; layout fetches data once and passes to both `Sidebar` and `MobileSidebar`; non-favorite collections show dominant-type colored circle; "View all collections" link added; `Sparkles`/`StickyNote` icons added to match seed data
