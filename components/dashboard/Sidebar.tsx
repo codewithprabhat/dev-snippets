@@ -14,6 +14,8 @@ import {
   Folder,
   Star,
   Settings,
+  Sparkles,
+  StickyNote,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -24,14 +26,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useSidebar } from "@/components/dashboard/SidebarContext";
-import { itemTypes, collections, currentUser } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import type { CollectionWithStats } from "@/lib/db/collections";
+import type { ItemTypeWithCount } from "@/lib/db/items";
 
 const iconMap: Record<string, React.ComponentType<{ className?: string; style?: React.CSSProperties }>> = {
   Code,
   MessageSquare,
+  Sparkles,
   Terminal,
   FileText,
+  StickyNote,
   File,
   Image,
   Link: LinkIcon,
@@ -47,12 +52,20 @@ function getInitials(name: string) {
     .slice(0, 2);
 }
 
-export function SidebarContent() {
+// Placeholder user until auth is implemented
+const currentUser = { name: "Demo User", email: "demo@devstash.io" };
+
+type SidebarProps = {
+  itemTypes: ItemTypeWithCount[];
+  sidebarCollections: CollectionWithStats[];
+};
+
+export function SidebarContent({ itemTypes, sidebarCollections }: SidebarProps) {
   const { collapsed } = useSidebar();
   const [collectionsOpen, setCollectionsOpen] = useState(true);
 
-  const favoriteCollections = collections.filter((c) => c.isFavorite);
-  const allCollections = collections.filter((c) => !c.isFavorite);
+  const favoriteCollections = sidebarCollections.filter((c) => c.isFavorite);
+  const allCollections = sidebarCollections.filter((c) => !c.isFavorite);
 
   return (
     <div className="flex h-full flex-col">
@@ -85,7 +98,7 @@ export function SidebarContent() {
             )}
             <nav className="flex flex-col gap-0.5">
               {itemTypes.map((type) => {
-                const Icon = iconMap[type.icon] ?? Code;
+                const Icon = iconMap[type.icon ?? ""] ?? Code;
                 const slug = type.name.toLowerCase();
 
                 return collapsed ? (
@@ -95,7 +108,7 @@ export function SidebarContent() {
                         href={`/items/${slug}`}
                         className="flex items-center justify-center rounded-md p-2 text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                       >
-                        <Icon className="size-4" style={{ color: type.color }} />
+                        <Icon className="size-4" style={{ color: type.color ?? undefined }} />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="flex items-center gap-2">
@@ -109,8 +122,8 @@ export function SidebarContent() {
                     href={`/items/${slug}`}
                     className="flex items-center gap-3 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                   >
-                    <Icon className="size-4 shrink-0" style={{ color: type.color }} />
-                    <span className="flex-1 truncate">{type.name}</span>
+                    <Icon className="size-4 shrink-0" style={{ color: type.color ?? undefined }} />
+                    <span className="flex-1 truncate capitalize">{type.name}</span>
                     <span className="text-xs text-muted-foreground">{type.count}</span>
                   </Link>
                 );
@@ -174,7 +187,10 @@ export function SidebarContent() {
                           href={`/collections/${col.id}`}
                           className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
                         >
-                          <Folder className="size-3.5 shrink-0" />
+                          <div
+                            className="size-3.5 shrink-0 rounded-full"
+                            style={{ backgroundColor: col.dominantColor }}
+                          />
                           <span className="flex-1 truncate">{col.name}</span>
                           <span className="text-xs text-muted-foreground">
                             {col.itemCount}
@@ -184,13 +200,21 @@ export function SidebarContent() {
                     </nav>
                   </div>
                 )}
+
+                {/* View all collections link */}
+                <Link
+                  href="/collections"
+                  className="mt-3 flex items-center px-2 py-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
+                >
+                  View all collections
+                </Link>
               </>
             )}
 
             {/* Collapsed sidebar: icon-only collection links */}
             {collapsed && (
               <nav className="flex flex-col gap-0.5">
-                {collections.slice(0, 5).map((col) => (
+                {sidebarCollections.slice(0, 5).map((col) => (
                   <Tooltip key={col.id} delayDuration={0}>
                     <TooltipTrigger asChild>
                       <Link
@@ -200,7 +224,10 @@ export function SidebarContent() {
                         {col.isFavorite ? (
                           <Star className="size-4 fill-yellow-500 text-yellow-500" />
                         ) : (
-                          <Folder className="size-4" />
+                          <div
+                            className="size-4 rounded-full"
+                            style={{ backgroundColor: col.dominantColor }}
+                          />
                         )}
                       </Link>
                     </TooltipTrigger>
@@ -259,7 +286,7 @@ export function SidebarContent() {
   );
 }
 
-export function Sidebar() {
+export function Sidebar({ itemTypes, sidebarCollections }: SidebarProps) {
   const { collapsed } = useSidebar();
 
   return (
@@ -269,7 +296,7 @@ export function Sidebar() {
         collapsed ? "w-14" : "w-64"
       )}
     >
-      <SidebarContent />
+      <SidebarContent itemTypes={itemTypes} sidebarCollections={sidebarCollections} />
     </aside>
   );
 }
