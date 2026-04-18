@@ -2,22 +2,15 @@
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-Code Review Quick Wins — low-risk, no-auth-dependency fixes identified in the periodic code review.
-
-1. **Add `orderBy` to `getItemTypes`** — sidebar item type order is non-deterministic without it; add `orderBy: { name: "asc" }` in `lib/db/items.ts`
-2. **Remove unused tags from `getRecentItems`** — `lib/db/items.ts` fetches tags for recent items but they are never rendered; remove the include
-3. **Fix `$queryRawUnsafe` in `scripts/test-db.ts`** — replace with the safe tagged-template form `` prisma.$queryRaw`SELECT 1` ``
-4. **Add `app/dashboard/loading.tsx` and `app/dashboard/error.tsx`** — prevents blank screen on DB hang or error; purely additive
+<!-- Add goals here -->
 
 ## Notes
 
-- Skip auth-scoping fixes (#1 High) and double `getCollections` (#3 Medium) — those belong in the auth feature
-- Skip `iconMap` extraction — medium scope, save for a refactor pass
-- Skip `PRO_TYPES` fix — depends on future `isPro` field on `ItemType` model
+<!-- Add notes here -->
 
 ## History
 
@@ -32,3 +25,4 @@ Code Review Quick Wins — low-risk, no-auth-dependency fixes identified in the 
 - 2026-04-15 — **Dashboard Collections — Real Data ✅** — `lib/db/collections.ts` with data fetching functions; collections fetched in server component; card border color derived from dominant item type; small type icons shown per collection; collection stats updated with real data
 - 2026-04-16 — **Dashboard Items — Real Data ✅** — `lib/db/items.ts` with `getPinnedItems`, `getRecentItems`, `getItemStats`; all four data calls run in parallel via `Promise.all`; pinned and recent items fetched in server component; item icon/color derived from item type; tags displayed on pinned items; type badge on recent items; pinned section hidden when empty; mock-data removed from Main.tsx
 - 2026-04-18 — **Add Pro Badge to Sidebar ✅** — ShadCN `Badge` added next to File and Image item types in sidebar; subtle amber outline style; shown in both expanded row and collapsed tooltip
+- 2026-04-18 — **Code Review Quick Wins ✅** — `orderBy: { name: "asc" }` added to `getItemTypes`; unused tags include removed from `getRecentItems`; `$queryRawUnsafe` replaced with safe tagged-template form in `test-db.ts`; `app/dashboard/loading.tsx` and `app/dashboard/error.tsx` added
