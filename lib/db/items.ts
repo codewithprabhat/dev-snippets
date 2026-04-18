@@ -62,9 +62,6 @@ export async function getRecentItems(limit = 10): Promise<ItemWithDetails[]> {
   const items = await db.item.findMany({
     include: {
       type: true,
-      tags: {
-        include: { tag: true },
-      },
     },
     orderBy: { updatedAt: "desc" },
     take: limit,
@@ -83,7 +80,7 @@ export async function getRecentItems(limit = 10): Promise<ItemWithDetails[]> {
       icon: item.type.icon,
       color: item.type.color,
     },
-    tags: item.tags.map((t) => ({ id: t.tag.id, name: t.tag.name })),
+    tags: [],
   }));
 }
 
@@ -95,6 +92,7 @@ export async function getItemTypes(): Promise<ItemTypeWithCount[]> {
         select: { items: true },
       },
     },
+    orderBy: { name: "asc" },
   });
 
   return types.map((type) => ({

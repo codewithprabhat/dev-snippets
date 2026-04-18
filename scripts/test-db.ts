@@ -11,7 +11,7 @@ async function main() {
   console.log("Testing database connection...\n");
 
   // 1. Connection check
-  await prisma.$queryRawUnsafe("SELECT 1");
+  await prisma.$queryRaw`SELECT 1`;
   console.log("Connection: OK\n");
 
   // 2. Users

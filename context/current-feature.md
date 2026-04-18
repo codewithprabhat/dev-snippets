@@ -2,15 +2,22 @@
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add goals here -->
+Code Review Quick Wins — low-risk, no-auth-dependency fixes identified in the periodic code review.
+
+1. **Add `orderBy` to `getItemTypes`** — sidebar item type order is non-deterministic without it; add `orderBy: { name: "asc" }` in `lib/db/items.ts`
+2. **Remove unused tags from `getRecentItems`** — `lib/db/items.ts` fetches tags for recent items but they are never rendered; remove the include
+3. **Fix `$queryRawUnsafe` in `scripts/test-db.ts`** — replace with the safe tagged-template form `` prisma.$queryRaw`SELECT 1` ``
+4. **Add `app/dashboard/loading.tsx` and `app/dashboard/error.tsx`** — prevents blank screen on DB hang or error; purely additive
 
 ## Notes
 
-<!-- Add notes here -->
+- Skip auth-scoping fixes (#1 High) and double `getCollections` (#3 Medium) — those belong in the auth feature
+- Skip `iconMap` extraction — medium scope, save for a refactor pass
+- Skip `PRO_TYPES` fix — depends on future `isPro` field on `ItemType` model
 
 ## History
 
