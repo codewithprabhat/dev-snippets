@@ -1,0 +1,2 @@
+- [DevSnippet Project Architecture](project_architecture.md) — File layout, stack conventions, and codebase patterns discovered during audit
+- [First Audit Findings — 2026-04-18](audit_findings_2026_04_18.md) — Recurring issues to track across future sessions (auth scoping, dead code, missing boundaries)
