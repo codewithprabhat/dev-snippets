@@ -1,6 +1,4 @@
-# Current Feature
-
-Stats & Sidebar — Real Data
+# Current Feature: Add Pro Badge to Sidebar
 
 ## Status
 
@@ -8,16 +6,14 @@ In Progress
 
 ## Goals
 
-- Display stats from database data, keeping current design/layout
-- Display item types in sidebar with their icons, linking to /items/[typename]
-- Add "View all collections" link under the collections list that goes to /collections
-- Keep star icons for favorite collections; for recents, show colored circle based on most-used item type
-- Create `src/lib/db/items.ts` with database functions
+- Add a "PRO" badge (ShadCN Badge component) next to Files and Images item types in the sidebar
+- Badge should be clean and subtle — not distracting
+- "PRO" text must be all uppercase
 
 ## Notes
 
-- Spec: @context/features/stats-sidebar-spec.md
-- Reference: @src/lib/db/collections.ts
+- Spec: @context/features/add-pro-badge-sidebar.md
+- Use the existing ShadCN Badge component
 
 ## History
 
