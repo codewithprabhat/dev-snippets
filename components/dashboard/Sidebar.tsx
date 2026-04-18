@@ -18,6 +18,7 @@ import {
   StickyNote,
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
@@ -42,6 +43,8 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; style?: 
   Link: LinkIcon,
   Folder,
 };
+
+const PRO_TYPES = new Set(["file", "image"]);
 
 function getInitials(name: string) {
   return name
@@ -113,6 +116,11 @@ export function SidebarContent({ itemTypes, sidebarCollections }: SidebarProps) 
                     </TooltipTrigger>
                     <TooltipContent side="right" className="flex items-center gap-2">
                       {type.name}
+                      {PRO_TYPES.has(slug) && (
+                        <Badge variant="outline" className="h-4 border-amber-500/40 bg-amber-500/10 px-1.5 py-0 text-[10px] text-amber-500">
+                          PRO
+                        </Badge>
+                      )}
                       <span className="text-muted-foreground">{type.count}</span>
                     </TooltipContent>
                   </Tooltip>
@@ -124,6 +132,11 @@ export function SidebarContent({ itemTypes, sidebarCollections }: SidebarProps) 
                   >
                     <Icon className="size-4 shrink-0" style={{ color: type.color ?? undefined }} />
                     <span className="flex-1 truncate capitalize">{type.name}</span>
+                    {PRO_TYPES.has(slug) && (
+                      <Badge variant="outline" className="h-4 border-amber-500/40 bg-amber-500/10 px-1.5 py-0 text-[10px] text-amber-500">
+                        PRO
+                      </Badge>
+                    )}
                     <span className="text-xs text-muted-foreground">{type.count}</span>
                   </Link>
                 );
