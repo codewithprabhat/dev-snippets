@@ -1,56 +1,16 @@
-# Current Feature: Auth Setup - NextAuth + GitHub Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Install NextAuth v5 (`next-auth@beta`) and `@auth/prisma-adapter`
-- Set up split auth config pattern for edge compatibility (`auth.config.ts` + `auth.ts`)
-- Add GitHub OAuth provider
-- Protect `/dashboard/*` routes via Next.js 16 proxy (`src/proxy.ts`)
-- Redirect unauthenticated users to NextAuth's default sign-in page
-- Extend Session type with `user.id`
+<!-- Add goals here -->
 
 ## Notes
 
-### Files to Create
-
-1. `src/auth.config.ts` — Edge-compatible config (providers only, no adapter)
-2. `src/auth.ts` — Full config with Prisma adapter and JWT strategy
-3. `src/app/api/auth/[...nextauth]/route.ts` — Export handlers from `auth.ts`
-4. `src/proxy.ts` — Route protection with redirect logic
-5. `src/types/next-auth.d.ts` — Extend Session type with `user.id`
-
-### Key Gotchas
-
-Use Context7 to verify the newest config and conventions.
-
-- Use `next-auth@beta` (not `@latest`, which installs v4)
-- Proxy file must be at `src/proxy.ts` (same level as `app/`)
-- Use named export: `export const proxy = auth(...)` — not default export
-- Use `session: { strategy: 'jwt' }` with split config pattern
-- Don't set custom `pages.signIn` — use NextAuth's default page
-
-### Environment Variables
-
-```
-AUTH_SECRET=
-AUTH_GITHUB_ID=
-AUTH_GITHUB_SECRET=
-```
-
-### Testing
-
-1. Go to `/dashboard` → should redirect to sign-in
-2. Click "Sign in with GitHub"
-3. Verify redirect back to `/dashboard` after auth
-
-### References
-
-- Edge compatibility: https://authjs.dev/getting-started/installation#edge-compatibility
-- Prisma adapter: https://authjs.dev/getting-started/adapters/prisma
+<!-- Add notes here -->
 
 ## History
 
@@ -66,3 +26,4 @@ AUTH_GITHUB_SECRET=
 - 2026-04-16 — **Dashboard Items — Real Data ✅** — `lib/db/items.ts` with `getPinnedItems`, `getRecentItems`, `getItemStats`; all four data calls run in parallel via `Promise.all`; pinned and recent items fetched in server component; item icon/color derived from item type; tags displayed on pinned items; type badge on recent items; pinned section hidden when empty; mock-data removed from Main.tsx
 - 2026-04-18 — **Add Pro Badge to Sidebar ✅** — ShadCN `Badge` added next to File and Image item types in sidebar; subtle amber outline style; shown in both expanded row and collapsed tooltip
 - 2026-04-18 — **Code Review Quick Wins ✅** — `orderBy: { name: "asc" }` added to `getItemTypes`; unused tags include removed from `getRecentItems`; `$queryRawUnsafe` replaced with safe tagged-template form in `test-db.ts`; `app/dashboard/loading.tsx` and `app/dashboard/error.tsx` added
+- 2026-04-20 — **Auth Phase 1 — NextAuth + GitHub Provider ✅** — `next-auth@beta` + `@auth/prisma-adapter` installed; split config (`auth.config.ts` edge-compat + `auth.ts` with Prisma adapter, JWT strategy, jwt/session callbacks adding `user.id`); `app/api/auth/[...nextauth]/route.ts` exports `{GET, POST}` from `handlers`; `proxy.ts` redirects unauthenticated `/dashboard/*` to NextAuth default sign-in with callbackUrl; `types/next-auth.d.ts` augments `Session.user.id` and `JWT.id`; `.env.example` updated with `AUTH_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`; files at project root (no `src/` dir)
