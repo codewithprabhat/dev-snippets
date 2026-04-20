@@ -1,25 +1,16 @@
-# Current Feature: Auth Phase 2 — Credentials (Email/Password) Provider
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Add NextAuth Credentials provider for email/password authentication alongside existing GitHub OAuth
-- Add `password` field to `User` model via Prisma migration (if not already present)
-- Update `auth.config.ts` with a Credentials provider placeholder (`authorize: () => null`) to stay edge-compatible
-- Override the Credentials provider in `auth.ts` with real bcryptjs validation logic
-- Create `POST /api/auth/register` route that validates input, checks for existing user, hashes password with bcryptjs, and creates the user
-- Verify registration via curl, sign-in via `/api/auth/signin`, redirect to `/dashboard`, and confirm GitHub OAuth still works
+<!-- Add goals here -->
 
 ## Notes
 
-- Use `bcryptjs` (already installed) for password hashing
-- Split-config pattern: placeholder in `auth.config.ts` (edge-safe), real logic in `auth.ts`
-- Registration payload: `{ name, email, password, confirmPassword }` — validate passwords match and user does not already exist
-- Return `{ success, error }`-style JSON responses from the register route
-- Reference: https://authjs.dev/getting-started/authentication/credentials
+<!-- Add notes here -->
 
 ## History
 
@@ -36,3 +27,4 @@ In Progress
 - 2026-04-18 — **Add Pro Badge to Sidebar ✅** — ShadCN `Badge` added next to File and Image item types in sidebar; subtle amber outline style; shown in both expanded row and collapsed tooltip
 - 2026-04-18 — **Code Review Quick Wins ✅** — `orderBy: { name: "asc" }` added to `getItemTypes`; unused tags include removed from `getRecentItems`; `$queryRawUnsafe` replaced with safe tagged-template form in `test-db.ts`; `app/dashboard/loading.tsx` and `app/dashboard/error.tsx` added
 - 2026-04-20 — **Auth Phase 1 — NextAuth + GitHub Provider ✅** — `next-auth@beta` + `@auth/prisma-adapter` installed; split config (`auth.config.ts` edge-compat + `auth.ts` with Prisma adapter, JWT strategy, jwt/session callbacks adding `user.id`); `app/api/auth/[...nextauth]/route.ts` exports `{GET, POST}` from `handlers`; `proxy.ts` redirects unauthenticated `/dashboard/*` to NextAuth default sign-in with callbackUrl; `types/next-auth.d.ts` augments `Session.user.id` and `JWT.id`; `.env.example` updated with `AUTH_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`; files at project root (no `src/` dir)
+- 2026-04-20 — **Auth Phase 2 — Credentials (Email/Password) Provider ✅** — Credentials provider placeholder added to `auth.config.ts` (edge-safe `authorize: () => null`); `auth.ts` filters placeholder and re-registers Credentials with bcryptjs comparison against `User.password`; new `POST /api/auth/register` validates `{name, email, password, confirmPassword}`, enforces password match + ≥8 chars, rejects duplicate emails (409), hashes with bcryptjs (10 rounds), returns `{success, user}` or `{success:false, error}`; `User.password` field already present from init migration; end-to-end verified via curl (register, duplicate, mismatch, signin callback, wrong password, session check) and GitHub OAuth still works
