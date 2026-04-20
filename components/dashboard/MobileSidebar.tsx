@@ -9,16 +9,21 @@ import type { ItemTypeWithCount } from "@/lib/db/items";
 type MobileSidebarProps = {
   itemTypes: ItemTypeWithCount[];
   sidebarCollections: CollectionWithStats[];
+  user: {
+    name?: string | null;
+    email?: string | null;
+    image?: string | null;
+  };
 };
 
-export function MobileSidebar({ itemTypes, sidebarCollections }: MobileSidebarProps) {
+export function MobileSidebar({ itemTypes, sidebarCollections, user }: MobileSidebarProps) {
   const { mobileOpen, setMobileOpen } = useSidebar();
 
   return (
     <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
       <SheetContent side="left" className="w-64 p-0" showCloseButton={false}>
         <SheetTitle className="sr-only">Navigation</SheetTitle>
-        <SidebarContent itemTypes={itemTypes} sidebarCollections={sidebarCollections} />
+        <SidebarContent itemTypes={itemTypes} sidebarCollections={sidebarCollections} user={user} />
       </SheetContent>
     </Sheet>
   );

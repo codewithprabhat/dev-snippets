@@ -13,19 +13,17 @@ import {
   LinkIcon,
   Folder,
   Star,
-  Settings,
   Sparkles,
   StickyNote,
 } from "lucide-react";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { SidebarUser } from "@/components/dashboard/SidebarUser";
 import { useSidebar } from "@/components/dashboard/SidebarContext";
 import { cn } from "@/lib/utils";
 import type { CollectionWithStats } from "@/lib/db/collections";
@@ -46,24 +44,19 @@ const iconMap: Record<string, React.ComponentType<{ className?: string; style?: 
 
 const PRO_TYPES = new Set(["file", "image"]);
 
-function getInitials(name: string) {
-  return name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-}
-
-// Placeholder user until auth is implemented
-const currentUser = { name: "Demo User", email: "demo@devstash.io" };
+type SidebarUserData = {
+  name?: string | null;
+  email?: string | null;
+  image?: string | null;
+};
 
 type SidebarProps = {
   itemTypes: ItemTypeWithCount[];
   sidebarCollections: CollectionWithStats[];
+  user: SidebarUserData;
 };
 
-export function SidebarContent({ itemTypes, sidebarCollections }: SidebarProps) {
+export function SidebarContent({ itemTypes, sidebarCollections, user }: SidebarProps) {
   const { collapsed } = useSidebar();
   const [collectionsOpen, setCollectionsOpen] = useState(true);
 
@@ -262,44 +255,13 @@ export function SidebarContent({ itemTypes, sidebarCollections }: SidebarProps) 
           collapsed && "flex justify-center p-2"
         )}
       >
-        {collapsed ? (
-          <Tooltip delayDuration={0}>
-            <TooltipTrigger asChild>
-              <Avatar className="size-8 cursor-pointer">
-                <AvatarFallback className="text-xs">
-                  {getInitials(currentUser.name)}
-                </AvatarFallback>
-              </Avatar>
-            </TooltipTrigger>
-            <TooltipContent side="right">
-              <p className="font-medium">{currentUser.name}</p>
-              <p className="text-xs text-muted-foreground">{currentUser.email}</p>
-            </TooltipContent>
-          </Tooltip>
-        ) : (
-          <div className="flex items-center gap-3">
-            <Avatar className="size-8 shrink-0">
-              <AvatarFallback className="text-xs">
-                {getInitials(currentUser.name)}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1 min-w-0">
-              <p className="truncate text-sm font-medium">{currentUser.name}</p>
-              <p className="truncate text-xs text-muted-foreground">
-                {currentUser.email}
-              </p>
-            </div>
-            <Button variant="ghost" size="icon" className="size-7 shrink-0">
-              <Settings className="size-4" />
-            </Button>
-          </div>
-        )}
+        <SidebarUser user={user} />
       </div>
     </div>
   );
 }
 
-export function Sidebar({ itemTypes, sidebarCollections }: SidebarProps) {
+export function Sidebar({ itemTypes, sidebarCollections, user }: SidebarProps) {
   const { collapsed } = useSidebar();
 
   return (
@@ -309,7 +271,7 @@ export function Sidebar({ itemTypes, sidebarCollections }: SidebarProps) {
         collapsed ? "w-14" : "w-64"
       )}
     >
-      <SidebarContent itemTypes={itemTypes} sidebarCollections={sidebarCollections} />
+      <SidebarContent itemTypes={itemTypes} sidebarCollections={sidebarCollections} user={user} />
     </aside>
   );
 }
