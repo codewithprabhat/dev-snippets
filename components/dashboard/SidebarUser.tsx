@@ -2,9 +2,8 @@
 
 import Link from "next/link";
 import { useTransition } from "react";
-import { LogOut, Settings } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
@@ -69,8 +68,8 @@ export function SidebarUser({ user }: SidebarUserProps) {
       <DropdownMenuSeparator />
       <DropdownMenuItem asChild>
         <Link href="/profile">
-          <Settings className="size-4" />
-          Profile
+          <User className="size-4" />
+          View profile
         </Link>
       </DropdownMenuItem>
       <DropdownMenuSeparator />
@@ -118,17 +117,6 @@ export function SidebarUser({ user }: SidebarUserProps) {
           <p className="truncate text-xs text-muted-foreground">{user.email}</p>
         )}
       </div>
-      <Button
-        asChild
-        variant="ghost"
-        size="icon"
-        className="size-7 shrink-0"
-        aria-label="Profile"
-      >
-        <Link href="/profile">
-          <Settings className="size-4" />
-        </Link>
-      </Button>
     </div>
   );
 }
