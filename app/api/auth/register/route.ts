@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
+import { sendVerificationEmail } from "@/lib/email";
+import {
+  buildVerificationUrl,
+  createVerificationToken,
+} from "@/lib/auth/verification-tokens";
 
 type RegisterBody = {
   name?: unknown;
@@ -10,6 +15,18 @@ type RegisterBody = {
 };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+function getOrigin(request: Request): string {
+  if (process.env.AUTH_URL) return process.env.AUTH_URL;
+  const forwardedProto = request.headers.get("x-forwarded-proto");
+  const forwardedHost = request.headers.get("x-forwarded-host");
+  const host = forwardedHost ?? request.headers.get("host");
+  if (host) {
+    const proto = forwardedProto ?? (host.startsWith("localhost") ? "http" : "https");
+    return `${proto}://${host}`;
+  }
+  return new URL(request.url).origin;
+}
 
 export async function POST(request: Request) {
   let body: RegisterBody;
@@ -63,6 +80,19 @@ export async function POST(request: Request) {
     data: { name, email, password: hashed },
     select: { id: true, name: true, email: true },
   });
+
+  try {
+    const token = await createVerificationToken(email);
+    const verifyUrl = buildVerificationUrl(getOrigin(request), token);
+    await sendVerificationEmail({ to: email, name: user.name, verifyUrl });
+  } catch (err) {
+    console.error("[register] failed to send verification email:", err);
+    await db.user.delete({ where: { id: user.id } }).catch(() => {});
+    return NextResponse.json(
+      { success: false, error: "Could not send verification email. Please try again." },
+      { status: 500 },
+    );
+  }
 
   return NextResponse.json({ success: true, user }, { status: 201 });
 }
