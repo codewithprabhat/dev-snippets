@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,6 +9,7 @@ import { Input } from "@/components/ui/input";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function RegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -53,11 +55,20 @@ export function RegisterForm() {
         }),
       });
 
-      const data = (await res.json()) as { success: boolean; error?: string };
+      const data = (await res.json()) as {
+        success: boolean;
+        error?: string;
+        requiresVerification?: boolean;
+      };
 
       if (!res.ok || !data.success) {
         setError(data.error ?? "Registration failed. Please try again.");
         setSubmitting(false);
+        return;
+      }
+
+      if (data.requiresVerification === false) {
+        router.push("/sign-in?registered=1");
         return;
       }
 

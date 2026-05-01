@@ -6,6 +6,7 @@ import {
   buildVerificationUrl,
   createVerificationToken,
 } from "@/lib/auth/verification-tokens";
+import { requireEmailVerification } from "@/lib/auth/config";
 
 type RegisterBody = {
   name?: unknown;
@@ -75,24 +76,35 @@ export async function POST(request: Request) {
   }
 
   const hashed = await bcrypt.hash(password, 10);
+  const verificationRequired = requireEmailVerification();
 
   const user = await db.user.create({
-    data: { name, email, password: hashed },
+    data: {
+      name,
+      email,
+      password: hashed,
+      emailVerified: verificationRequired ? null : new Date(),
+    },
     select: { id: true, name: true, email: true },
   });
 
-  try {
-    const token = await createVerificationToken(email);
-    const verifyUrl = buildVerificationUrl(getOrigin(request), token);
-    await sendVerificationEmail({ to: email, name: user.name, verifyUrl });
-  } catch (err) {
-    console.error("[register] failed to send verification email:", err);
-    await db.user.delete({ where: { id: user.id } }).catch(() => {});
-    return NextResponse.json(
-      { success: false, error: "Could not send verification email. Please try again." },
-      { status: 500 },
-    );
+  if (verificationRequired) {
+    try {
+      const token = await createVerificationToken(email);
+      const verifyUrl = buildVerificationUrl(getOrigin(request), token);
+      await sendVerificationEmail({ to: email, name: user.name, verifyUrl });
+    } catch (err) {
+      console.error("[register] failed to send verification email:", err);
+      await db.user.delete({ where: { id: user.id } }).catch(() => {});
+      return NextResponse.json(
+        { success: false, error: "Could not send verification email. Please try again." },
+        { status: 500 },
+      );
+    }
   }
 
-  return NextResponse.json({ success: true, user }, { status: 201 });
+  return NextResponse.json(
+    { success: true, user, requiresVerification: verificationRequired },
+    { status: 201 },
+  );
 }
