@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +8,13 @@ import { Input } from "@/components/ui/input";
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function RegisterForm() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [sentTo, setSentTo] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -62,11 +61,26 @@ export function RegisterForm() {
         return;
       }
 
-      router.push("/sign-in?registered=1");
+      setSentTo(trimmedEmail);
     } catch {
       setError("Network error. Please try again.");
       setSubmitting(false);
     }
+  }
+
+  if (sentTo) {
+    return (
+      <div className="flex flex-col gap-3">
+        <p className="rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-3 text-sm text-emerald-500">
+          <span className="font-medium">Check your email.</span> We sent a verification
+          link to <span className="font-medium">{sentTo}</span>. Click it to activate
+          your account.
+        </p>
+        <p className="text-xs text-muted-foreground">
+          Didn&apos;t get it? Check your spam folder, or wait a minute and try again.
+        </p>
+      </div>
+    );
   }
 
   return (

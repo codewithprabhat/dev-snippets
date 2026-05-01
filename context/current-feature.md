@@ -1,16 +1,33 @@
-# Current Feature
+# Current Feature: Email Verification on Register
 
 ## Status
 
-Not Started
+In Progress
 
 ## Goals
 
-<!-- Add goals here -->
+- Send a verification email to new users when they register
+- Email contains a unique link that, when clicked, verifies the user's email
+- User cannot sign in (with credentials) until email is verified
+- Use Resend to send the email; `RESEND_API_KEY` is already in `.env`
+- Use `onboarding@resend.dev` as the `from` address (placeholder until a verified domain is set up)
+- Provide clear UI feedback on register ("check your email") and on the verification page (success / invalid / expired)
 
 ## Notes
 
-<!-- Add notes here -->
+- Stack already in place: NextAuth v5 (JWT strategy) + Prisma + Neon Postgres + bcryptjs Credentials provider
+- `User.emailVerified: DateTime?` already exists in the Prisma schema (NextAuth adapter standard) — gate sign-in on this being non-null
+- `VerificationToken` model already exists in the schema — reuse it for the email-verification token (identifier = email, token = random string, expires = ~24h)
+- Token should be generated with `crypto.randomBytes` (or `crypto.randomUUID`) and stored hashed-or-raw in `VerificationToken`; verification route looks it up, checks expiry, sets `User.emailVerified = now()`, deletes the token
+- Verification link format: `${NEXTAUTH_URL or origin}/verify-email?token=...&email=...`
+- Flow:
+  1. `POST /api/auth/register` → create user (unverified) → generate token → send Resend email with link → return success
+  2. User clicks link → `GET /verify-email` route reads token, validates, marks user verified, redirects to `/sign-in?verified=1`
+  3. Credentials `authorize` callback rejects sign-in if `user.emailVerified` is null (with a clear error)
+- GitHub OAuth already returns verified emails — those users should be marked verified automatically (Prisma adapter usually handles this)
+- Add a small Resend wrapper in `lib/email.ts` (or similar) so future emails (password reset, etc.) reuse it
+- `.env.example` should be updated with `RESEND_API_KEY=` (and optionally `EMAIL_FROM=onboarding@resend.dev`)
+- Sign-in page should show a success banner when `?verified=1` is present (mirror the existing `?registered=1` pattern)
 
 ## History
 

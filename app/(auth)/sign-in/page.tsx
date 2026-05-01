@@ -5,6 +5,7 @@ type SearchParams = Promise<{
   callbackUrl?: string;
   error?: string;
   registered?: string;
+  verified?: string;
 }>;
 
 export default async function SignInPage({
@@ -12,7 +13,7 @@ export default async function SignInPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { callbackUrl, error, registered } = await searchParams;
+  const { callbackUrl, error, registered, verified } = await searchParams;
 
   return (
     <div className="rounded-lg border border-border bg-card p-6 shadow-sm">
@@ -23,7 +24,13 @@ export default async function SignInPage({
         </p>
       </div>
 
-      {registered && (
+      {verified && (
+        <p className="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-500">
+          Email verified. You can now sign in.
+        </p>
+      )}
+
+      {registered && !verified && (
         <p className="mb-4 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-3 py-2 text-sm text-emerald-500">
           Account created. Please sign in.
         </p>
