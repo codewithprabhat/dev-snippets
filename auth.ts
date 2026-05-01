@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
 import authConfig from "@/auth.config";
+import { requireEmailVerification } from "@/lib/auth/config";
 
 export const { auth, handlers, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(db),
@@ -44,7 +45,7 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
         const ok = await bcrypt.compare(password, user.password);
         if (!ok) return null;
 
-        if (!user.emailVerified) return null;
+        if (requireEmailVerification() && !user.emailVerified) return null;
 
         return {
           id: user.id,

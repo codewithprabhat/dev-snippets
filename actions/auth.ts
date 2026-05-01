@@ -4,6 +4,7 @@ import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
 import { signIn, signOut } from "@/auth";
 import { db } from "@/lib/db";
+import { requireEmailVerification } from "@/lib/auth/config";
 
 export type SignInState = { error: string } | undefined;
 
@@ -19,17 +20,19 @@ export async function credentialsSignInAction(
     return { error: "Email and password are required" };
   }
 
-  const user = await db.user.findUnique({
-    where: { email },
-    select: { password: true, emailVerified: true },
-  });
-  if (user?.password && !user.emailVerified) {
-    const passwordOk = await bcrypt.compare(password, user.password);
-    if (passwordOk) {
-      return {
-        error:
-          "Please verify your email before signing in. Check your inbox for the verification link.",
-      };
+  if (requireEmailVerification()) {
+    const user = await db.user.findUnique({
+      where: { email },
+      select: { password: true, emailVerified: true },
+    });
+    if (user?.password && !user.emailVerified) {
+      const passwordOk = await bcrypt.compare(password, user.password);
+      if (passwordOk) {
+        return {
+          error:
+            "Please verify your email before signing in. Check your inbox for the verification link.",
+        };
+      }
     }
   }
 
