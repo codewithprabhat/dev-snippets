@@ -1,33 +1,16 @@
-# Current Feature: Email Verification on Register
+# Current Feature
 
 ## Status
 
-In Progress
+Not Started
 
 ## Goals
 
-- Send a verification email to new users when they register
-- Email contains a unique link that, when clicked, verifies the user's email
-- User cannot sign in (with credentials) until email is verified
-- Use Resend to send the email; `RESEND_API_KEY` is already in `.env`
-- Use `onboarding@resend.dev` as the `from` address (placeholder until a verified domain is set up)
-- Provide clear UI feedback on register ("check your email") and on the verification page (success / invalid / expired)
+<!-- Bullet points of what success looks like -->
 
 ## Notes
 
-- Stack already in place: NextAuth v5 (JWT strategy) + Prisma + Neon Postgres + bcryptjs Credentials provider
-- `User.emailVerified: DateTime?` already exists in the Prisma schema (NextAuth adapter standard) — gate sign-in on this being non-null
-- `VerificationToken` model already exists in the schema — reuse it for the email-verification token (identifier = email, token = random string, expires = ~24h)
-- Token should be generated with `crypto.randomBytes` (or `crypto.randomUUID`) and stored hashed-or-raw in `VerificationToken`; verification route looks it up, checks expiry, sets `User.emailVerified = now()`, deletes the token
-- Verification link format: `${NEXTAUTH_URL or origin}/verify-email?token=...&email=...`
-- Flow:
-  1. `POST /api/auth/register` → create user (unverified) → generate token → send Resend email with link → return success
-  2. User clicks link → `GET /verify-email` route reads token, validates, marks user verified, redirects to `/sign-in?verified=1`
-  3. Credentials `authorize` callback rejects sign-in if `user.emailVerified` is null (with a clear error)
-- GitHub OAuth already returns verified emails — those users should be marked verified automatically (Prisma adapter usually handles this)
-- Add a small Resend wrapper in `lib/email.ts` (or similar) so future emails (password reset, etc.) reuse it
-- `.env.example` should be updated with `RESEND_API_KEY=` (and optionally `EMAIL_FROM=onboarding@resend.dev`)
-- Sign-in page should show a success banner when `?verified=1` is present (mirror the existing `?registered=1` pattern)
+<!-- Additional context, constraints, or details from spec -->
 
 ## History
 
@@ -46,3 +29,4 @@ In Progress
 - 2026-04-20 — **Auth Phase 1 — NextAuth + GitHub Provider ✅** — `next-auth@beta` + `@auth/prisma-adapter` installed; split config (`auth.config.ts` edge-compat + `auth.ts` with Prisma adapter, JWT strategy, jwt/session callbacks adding `user.id`); `app/api/auth/[...nextauth]/route.ts` exports `{GET, POST}` from `handlers`; `proxy.ts` redirects unauthenticated `/dashboard/*` to NextAuth default sign-in with callbackUrl; `types/next-auth.d.ts` augments `Session.user.id` and `JWT.id`; `.env.example` updated with `AUTH_SECRET`/`AUTH_GITHUB_ID`/`AUTH_GITHUB_SECRET`; files at project root (no `src/` dir)
 - 2026-04-20 — **Auth Phase 2 — Credentials (Email/Password) Provider ✅** — Credentials provider placeholder added to `auth.config.ts` (edge-safe `authorize: () => null`); `auth.ts` filters placeholder and re-registers Credentials with bcryptjs comparison against `User.password`; new `POST /api/auth/register` validates `{name, email, password, confirmPassword}`, enforces password match + ≥8 chars, rejects duplicate emails (409), hashes with bcryptjs (10 rounds), returns `{success, user}` or `{success:false, error}`; `User.password` field already present from init migration; end-to-end verified via curl (register, duplicate, mismatch, signin callback, wrong password, session check) and GitHub OAuth still works
 - 2026-04-20 — **Auth Phase 3 — Custom Sign-In/Register/Sign-Out UI ✅** — `auth.config.ts` `pages.signIn: "/sign-in"` + `proxy.ts` redirects to `/sign-in?callbackUrl`; server actions in `actions/auth.ts` (`credentialsSignInAction`, `githubSignInAction`, `signOutAction`); `app/(auth)` route group with centered layout, `/sign-in` (email+password + GitHub button, `useActionState` + auth-error mapping, success banner on `?registered=1`) and `/register` (client validation for match/email/≥8, POSTs to `/api/auth/register`, redirects to sign-in on success); reusable `UserAvatar` (image or initials); shadcn-style `DropdownMenu` built on existing `radix-ui` monolith; `SidebarUser` with avatar→dropdown (Profile link + Sign out) + gear icon linking to `/profile`, works in both expanded and collapsed modes; dashboard layout threads `session.user` to Sidebar/MobileSidebar and guards `/dashboard` server-side; inline GitHub SVG (lucide-react 1.8 dropped brand icons); verified end-to-end (invalid password error, valid sign-in, dropdown + sign out, callbackUrl redirect, register flow with mismatch error → success → sign-in)
+- 2026-05-01 — **Email Verification on Register ✅** — Resend wrapper at `lib/email.ts` (lazy client, configurable `EMAIL_FROM`, plaintext + HTML body); `lib/auth/verification-tokens.ts` with `createVerificationToken` (32-byte hex, 24h TTL, replaces any prior token for the email) / `consumeVerificationToken` (single-use, deletes even on expiry) / `buildVerificationUrl`; `POST /api/auth/register` issues a token, sends a Resend email, and rolls back the user on email failure; new `/verify-email` server page consumes token, sets `User.emailVerified`, redirects to `/sign-in?verified=1`, renders missing/invalid/expired states; `auth.ts` Credentials authorize returns null when `emailVerified` is null; `credentialsSignInAction` does a pre-flight bcrypt check so wrong-password and unverified-email surface distinct messages without leaking account existence; `RegisterForm` swaps redirect for an inline "Check your email" success panel; `/sign-in` shows a "Email verified" banner on `?verified=1` (suppresses the `?registered=1` banner); `.env.example` documents `AUTH_URL`, `RESEND_API_KEY`, `EMAIL_FROM`. Side-quest: added `db:reset-users` dry-run-by-default script that wipes non-demo users (and orphan verification tokens) for a clean slate during testing.
